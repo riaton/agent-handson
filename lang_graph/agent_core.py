@@ -18,16 +18,16 @@ from dotenv import load_dotenv
 # 環境変数ロード
 load_dotenv(override=True)
 
-web_search = TavilySearch(max_results=2, topic="general")
-working_directory = "report"
+web_search_tool = TavilySearch(max_results=2, topic="general")
 
+working_directory = "report"
 file_toolkit = FileManagementToolkit(
     root_dir=str(working_directory),
     selected_tools=["write_file"]
 )
-write_file = file_toolkit.get_tools()[0]
+write_file_tool = file_toolkit.get_tools()[0]
 
-tools = [web_search, write_file]
+tools = [web_search_tool, write_file_tool]
 tools_by_name = {tool.name: tool for tool in tools}
 
 cfg = Config(
@@ -54,7 +54,7 @@ system_prompt = """
 @task
 def invoke_llm(messages: list[BaseMessage]) -> AIMessage:
     response = llm_with_tools.invoke(
-        SystemMessage(content=system_prompt) + messages
+        [SystemMessage(content=system_prompt)] + messages
     )
     return response
 
@@ -70,7 +70,7 @@ def ask_human(tool_call: ToolCall):
     tool_name = tool_call["name"]
     tool_args = tool_call["args"]
     tool_data = {"name": tool_name}
-    if tool_name == web_search.name:
+    if tool_name == web_search_tool.name:
         args = f'* ツール名\n'
         args += f'  * {tool_name}\n'
         args += f'* 引数\n'
@@ -78,7 +78,7 @@ def ask_human(tool_call: ToolCall):
             args += f'  *{key}\n'
             args += f'  * {value}\n'
         tool_data["args"] = args
-    elif tool_name == write_file.name:
+    elif tool_name == write_file_tool.name:
         args = f'* ツール名\n'
         args += f'  * {tool_name}\n'
         args += f'* 保存ファイル名\n'
@@ -100,33 +100,37 @@ def ask_human(tool_call: ToolCall):
 checkpointer = MemorySaver()
 @entrypoint(checkpointer)
 def agent(messages):
+    # ai agentを呼び出す
     llm_response = invoke_llm(messages).result()
 
+    # responseにtool_calls(ツールを使った方がいいという推論)があればループ
     while True:
         if not llm_response.tool_calls:
             break
 
         approved_tools = []
-        tool_results = []
+        tool_deny_messages = []
 
+        # tool実行の承認をユーザからもらう
         for tool_call in llm_response.tool_calls:
             feedback = ask_human(tool_call)
             if isinstance(feedback, ToolMessage):
-                tool_results.append(feedback)
+                tool_deny_messages.append(feedback)
             else:
                 approved_tools.append(feedback)
 
+        # 承認されたツールを実行する
         tool_futures = []
         for tool_call in approved_tools:
             future = use_tool(tool_call)
             tool_futures.append(future)
 
-        tool_use_resutls = []
+        tool_use_results = []
         for future in tool_futures:
             result = future.result()
-            tool_use_resutls.append(result)
+            tool_use_results.append(result)
 
-        messages = add_messages(messages, [llm_response, *tool_use_resutls, *tool_results])
+        messages = add_messages(messages, [llm_response, *tool_use_results, *tool_deny_messages])
 
         llm_response = invoke_llm(messages).result()
         

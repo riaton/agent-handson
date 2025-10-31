@@ -66,6 +66,7 @@ def feedback():
         if st.button("APPROVE", width="stretch"):
             st.session_state.waiting_for_approval = False
             feedback_result = "APPROVE"
+    with deny_column:
         if st.button("DENY", width="stretch"):
             st.session_state.waiting_for_approval = False
             feedback_result = "DENY"
