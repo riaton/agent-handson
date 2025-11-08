@@ -1,0 +1,46 @@
+import asyncio
+from strands import Agent, tool
+from strands.tools.mcp import MCPClient
+from mcp.client.streamable_http import streamablehttp_client
+from .agent_executor import invoke
+
+#エージェントの状態を管理
+class AwsMasterState:
+    def __init__(self):
+        self.client = None
+        self.queue = None
+
+_state = AwsMasterState()
+
+def setup_aws_master(queue):
+    _state.queue = queue
+    if queue and not _state.client:
+        try:
+            _state.client = MCPClient(
+                lambda: streamablehttp_client(
+                    "https://knowledge-mcp.global.api.aws"
+                )
+            )
+        except Exception:
+            _state.client = None
+
+
+def _create_agent():
+    """サブエージェントを作成"""
+    if not _state.client:
+        return None
+    return Agent(
+        model="us.amazon.nova-premier-v1:0",
+        tools=_state.client.list_tools_async()
+    )
+
+
+@tool
+async def aws_master(query):
+    """AWSマスターエージェント"""
+    if not _state.client:
+        return "MCPクライアントが利用不可です"
+    return await invoke(
+        "AWSマスター", query, _state.client,
+        _create_agent, _state.queue
+    )
