@@ -1,8 +1,8 @@
-import asyncio
 from strands import Agent, tool
 from strands.tools.mcp import MCPClient
 from mcp.client.streamable_http import streamablehttp_client
 from .agent_executor import invoke
+
 
 #エージェントの状態を管理
 class AwsMasterState:
@@ -31,7 +31,7 @@ def _create_agent():
         return None
     return Agent(
         model="us.amazon.nova-premier-v1:0",
-        tools=_state.client.list_tools_async()
+        tools=_state.client.list_tools_sync()
     )
 
 

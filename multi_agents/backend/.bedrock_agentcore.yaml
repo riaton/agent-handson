@@ -1,0 +1,30 @@
+default_agent: aws_assistant
+agents:
+  aws_assistant:
+    name: aws_assistant
+    entrypoint: main.py
+    platform: linux/arm64
+    container_runtime: docker
+    aws:
+      execution_role: arn:aws:iam::649241307730:role/AmazonBedrockAgentCoreSDKRuntime-us-west-2-20be6086cc
+      execution_role_auto_create: false
+      account: '649241307730'
+      region: us-west-2
+      ecr_repository: 649241307730.dkr.ecr.us-west-2.amazonaws.com/bedrock-agentcore-aws_assistant
+      ecr_auto_create: false
+      network_configuration:
+        network_mode: PUBLIC
+      protocol_configuration:
+        server_protocol: HTTP
+      observability:
+        enabled: true
+    bedrock_agentcore:
+      agent_id: aws_assistant-vSU6dLDeza
+      agent_arn: arn:aws:bedrock-agentcore:us-west-2:649241307730:runtime/aws_assistant-vSU6dLDeza
+      agent_session_id: null
+    codebuild:
+      project_name: bedrock-agentcore-aws_assistant-builder
+      execution_role: arn:aws:iam::649241307730:role/AmazonBedrockAgentCoreSDKCodeBuild-us-west-2-20be6086cc
+      source_bucket: bedrock-agentcore-codebuild-sources-649241307730-us-west-2
+    authorizer_configuration: null
+    oauth_configuration: null

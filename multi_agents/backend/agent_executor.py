@@ -1,5 +1,5 @@
-import asyncio
 from .stream_handler import send_event
+
 
 async def extract(queue, agent, event, state):
     """ストリーミングから内容を抽出"""
@@ -54,3 +54,4 @@ async def invoke(agent, query, mcp, create_agent, queue):
         return state["text"]
     except Exception:
         return f"{agent}エージェントの処理に失敗しました"
+    

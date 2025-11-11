@@ -20,6 +20,7 @@ def _create_orchestrator():
 app = BedrockAgentCoreApp()
 orchestrator = _create_orchestrator()
 
+
 @app.entrypoint
 async def invoke(payload):
     """呼び出し処理の開始時点"""
@@ -40,6 +41,7 @@ async def invoke(payload):
         #キューをクリーンアップ
         setup_aws_master(None)
         setup_api_master(None)
+
 
 #APIサーバを起動
 if __name__ == "__main__":

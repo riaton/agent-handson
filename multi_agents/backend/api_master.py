@@ -1,4 +1,4 @@
-import os, asyncio
+import os
 from strands import Agent, tool
 from strands.tools.mcp import MCPClient
 from mcp import stdio_client, StdioServerParameters
@@ -12,6 +12,7 @@ class ApiMasterState:
         self.queue = None
 
 _state = ApiMasterState()
+
 
 def setup_api_master(queue):
     """新規キューを受け取り、MCPクライアントを準備"""
@@ -28,6 +29,7 @@ def setup_api_master(queue):
         except Exception:
             _state.client = None
 
+
 def _create_agent():
     """サブエージェントを作成"""
     if not _state.client:
@@ -36,6 +38,7 @@ def _create_agent():
         model="us.amazon.nova-premier-v1:0",
         tools=_state.client.list_tools_sync()
     )
+
 
 @tool
 async def api_master(query):
