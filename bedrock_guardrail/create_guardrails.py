@@ -42,3 +42,26 @@ def create_bedrock_attack_guardrail():
 create_bedrock_attack_guardrail()
 
 
+def create_code_name_guardrail():
+    bedrock_client = boto3.client("bedrock")
+    response = bedrock_client.create_guardrail(
+        name="CodeNameGuardrail",
+        description="Guardrail to block service code name",
+        wordPolicyConfig={
+            "wordsConfig": [
+                {"text": "Orion"},
+                {"text": "Falcon"},
+                {"text": "Mercury"},
+                {"text": "Athena"},
+                {"text": "Sentinel"}
+            ],
+        },
+        blockedInputMessaging="NGワードを含むため、ブロックしました。",
+        blockedOutputsMessaging="NGワードを含むため、ブロックしました。"
+    )
+    print("Created guardrail:")
+    print(f"ID: {response["guardrailId"]}")
+    print(f"ARN: {response["guardrailArn"]}")
+    print(f"Version: {response["version"]}")
+
+create_code_name_guardrail()
