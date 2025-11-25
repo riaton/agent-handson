@@ -3,6 +3,7 @@
 
 ### Bedrock
 - bedrock_apiディレクトリ
+- bedrock_guardrailディレクトリ
 ### LangGraph
 - lang_graphディレクトリ
 ### Strands
